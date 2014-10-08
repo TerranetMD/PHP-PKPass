@@ -190,7 +190,7 @@ class PKPass {
 		}
 		
 		if (array_key_exists($name, $this->files)) {
-			unset($this->files[$name])
+			unset($this->files[$name]);
 		}
 		
 		$this->files[$name] = $isContent ? array('content' => $path) : array('path' => $path);	
