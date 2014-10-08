@@ -169,15 +169,32 @@ class PKPass {
 	 * Parameter: string, path to file
 	 * Parameter: string, optional, name to create file as
 	 * Return: boolean, true on succes, false if file doesn't exist
+	 
+	 * @param string $path 
+	 * @param string $name
+	 * @param boolean $isContent
+	 * @return boolean
 	 */
-	public function addFile($path, $name = NULL){
-		if(file_exists($path)){
+	public function addFile($path, $name = NULL, $isContent = false) {
+		if ($isContent) {
+			if (empty($name)) {
+				$this->sError = 'File name is not defined';
+				return false;
+			}
+		} else {
+			if(!file_exists($path)) {
+				$this->sError = 'File does not exist.';
+				return false;
+			}
 			$name = ($name === NULL) ? basename($path) : $name;
-            $this->files[$name] = $path;
-            return true;
 		}
-		$this->sError = 'File does not exist.';
-		return false;
+		
+		if (array_key_exists($name, $this->files)) {
+			unset($this->files[$name])
+		}
+		
+		$this->files[$name] = $isContent ? array('content' => $path) : array('path' => $path);	
+    		return true;
 	}
 	
 	/*
@@ -271,11 +288,11 @@ class PKPass {
 		// Creates SHA hashes for all files in package
 		$this->SHAs['pass.json'] = sha1($this->JSON);
 		$hasicon = false;
-		foreach($this->files as $name => $path) {
+		foreach($this->files as $name => $data) {
 			if(strtolower($name) == 'icon.png'){
 				$hasicon = true;
 			}
-			$this->SHAs[$name] = sha1(file_get_contents($path));
+			$this->SHAs[$name] = sha1(array_key_exists('content', $data) ? $data['content'] : file_get_contents($data['path']));
 			
 		}
 		
@@ -366,8 +383,12 @@ class PKPass {
 		$zip->addFile($paths['signature'],'signature');
 		$zip->addFromString('manifest.json',$manifest);
 		$zip->addFromString('pass.json',$this->JSON);
-		foreach($this->files as $name => $path){
-			$zip->addFile($path, $name);
+		foreach($this->files as $name => $data){
+			if (array_key_exists('content', $data)) {
+				$zip->addFromString($name, $data['content']);
+			} else {
+				$zip->addFile($data['path'], $name);
+			}
 		}
 		$zip->close();
 		
