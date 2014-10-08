@@ -1,5 +1,5 @@
 {
-    "name": "pkpass/pkpass",
+    "name": "terranet/pkpass",
     "description": "PHP PKPass class for iOS 6 Passbook",
     "keywords": ["PHP","apple","ios","iphone","ipad","passbook"],
     "homepage": "https://github.com/tschoffelen/PHP-PKPass",
